@@ -1,25 +1,23 @@
 #include "Matrix.hpp"
+#include <iostream>
+
 
 int main(void)
 {
-    int row = 4, col = 4;
+    int row = 4, col = 6;
     Matrix m(row, col);
 
     for (int i = 0; i < row; i++)
     {
         for (int j = 0; j < col; j++)
         {
-            m.SetElement(i,j,(i*row) + j);
+            m[i][j] = i*col+j;
         }
     }
-    Matrix p = m.transpose();
-
-    m.print();
     std::cout << "\n";
-    p.print();
+    m.transpose().print();
     std::cout << "\n";
-    (5*p).print();
-    std::cout << "\n";
-    (p*5).print();
+    (m * m.transpose()).print();
+    
     return 0;
 }
