@@ -15,9 +15,7 @@ int main(void)
         }
     }
     std::cout << "\n";
-    m.transpose().print();
-    std::cout << "\n";
-    (m * m.transpose()).print();
+    (m*m).print();
     
     return 0;
 }

@@ -54,8 +54,8 @@ Matrix::~Matrix()
     delete matrix;
 }
 
-int Matrix::GetRows() const {return rows;}
-int Matrix::GetCols() const {return cols;}
+int Matrix::NumRows() const {return rows;}
+int Matrix::NumCols() const {return cols;}
 
 void Matrix::ShowSteps(bool ss)
 {
@@ -65,14 +65,11 @@ void Matrix::ShowSteps(bool ss)
 static int most_digits(Matrix m)
 {
     double max = std::numeric_limits<double>().lowest();
-    for (int i = 0; i < m.GetRows(); i++)
+    for (int i = 0; i < m.NumRows(); i++)
     {
-        for (int j = 0; j < m.GetCols(); j++)
+        for (int j = 0; j < m.NumCols(); j++)
         {
-            if (m[i][j] > max)
-            {
-                max = m[i][j];
-            }
+            if (m[i][j] > max) max = m[i][j];
         }
     }
     
@@ -98,6 +95,43 @@ Row Matrix::operator [](int r)
     return matrix[r];
 }
 
+void Matrix::AddRows(int r1, int r2)
+{
+    Row R1 = matrix[r1];
+    Row R2 = matrix[r2];
+    for (int i = 0; i < cols; i++)
+    {
+        R1[i] = R1[i] + R2[i];
+    }
+}
+
+void Matrix::MultRow(double s, int r)
+{
+    Row R = matrix[r];
+    for (int i = 0; i < cols; i++)
+    {
+        R[i] = R[i] * s;
+    }
+}
+
+void Matrix::AddRows(int r1, int r2, double s)
+{
+    Row R1 = matrix[r1];
+    Row R2 = matrix[r2];
+    for (int i = 0; i < cols; i++)
+    {
+        R1[i] = R1[i] + (R2[i] * s);
+    }
+}
+
+void Matrix::RowSwap(int r1, int r2)
+{
+    Row temp = matrix[r1];
+    matrix[r2] = matrix[r1];
+    matrix[r1] = temp;
+}
+
+
 Matrix Matrix::transpose()
 {
     Matrix T(cols, rows);
@@ -111,9 +145,75 @@ Matrix Matrix::transpose()
     return T;
 }
 
+bool isREF(Matrix m)
+{
+    // TODO
+    int rows = m.NumRows();
+    int cols = m.NumCols();
+    // Base cases
+    if (rows == 0 || cols == 0) return true;
+    if (rows == 1) return true;
+    
+    // 1.) All nonzero rows are above any all zero rows.
+    int lowestNonzeroRow = rows;
+    int highestZeroRow = -1;
+    for (int i = rows-1; i > 0; i--)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            if (m[i][j] != 0) 
+            {
+                lowestNonzeroRow = i;
+                break;
+            }
+        }
+        if (lowestNonzeroRow != rows) break;
+    }
+
+    // 2.) Each leading (nonzero) entry of a row is in 
+    //  a column to the right of the leading (nonzero)
+    //  entry of the row above it.
+
+    // 3.) All entries in a column below a leading entry are zeros.
+}
+
+bool isRREF(Matrix m)
+{
+
+}
+
+Matrix Matrix::REF()
+{
+    if (isREF(*this)) return *this;
+}
+
+Matrix Matrix::RREF()
+{
+    if (isRREF(*this)) return *this;
+}
+
+double Matrix::determinant()
+{
+    if (rows != cols)
+    {
+        std::cerr << "Invalid matrix size for determinant\n";
+        exit(0);
+    }
+}
+
+Matrix Matrix::inverse()
+{
+
+}
+
 // Addition
 Matrix operator +(Matrix m1, Matrix m2)
 {
+    if (m1.cols != m2.cols || m1.rows != m2.rows)
+    {
+        std::cerr << "Invalid matrix sizes for operator: +\n";
+        exit(0);
+    }
     Matrix m(m1.rows, m1.cols);
     for (int i = 0; i < m1.rows; i++)
     {
@@ -128,6 +228,11 @@ Matrix operator +(Matrix m1, Matrix m2)
 // Subtraction
 Matrix operator -(Matrix m1, Matrix m2)
 {
+    if (m1.cols != m2.cols || m1.rows != m2.rows)
+    {
+        std::cerr << "Invalid matrix sizes for operator: -\n";
+        exit(0);
+    }
     Matrix m(m1.rows, m1.cols);
     for (int i = 0; i < m1.rows; i++)
     {
@@ -142,7 +247,7 @@ Matrix operator -(Matrix m1, Matrix m2)
 double m_helper(Matrix m1, Matrix m2, int m1r, int m2c)
 {
     double t = 0;
-    for (int i = 0; i < m1.GetCols(); i++) 
+    for (int i = 0; i < m1.NumCols(); i++) 
     {
         t += m1[m1r][i] * m2[i][m2c];
     }
@@ -154,7 +259,7 @@ Matrix operator *(Matrix m1, Matrix m2)
 {
     if (m1.cols != m2.rows)
     {
-        std::cerr << "Invalid matrix sizes";
+        std::cerr << "Invalid matrix sizes for operator: *\n";
         exit(0);
     }
     Matrix m(m1.rows, m2.cols);
